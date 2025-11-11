@@ -95,6 +95,7 @@
       padding: 12px 16px;
       border-radius: 15px;
       word-wrap: break-word;
+      line-height: 1.5;
     }
 
     .user .message-content {
@@ -107,6 +108,14 @@
       background: #e9ecef;
       color: var(--text);
       border-bottom-left-radius: 0;
+    }
+
+    .bot .message-content strong {
+      color: var(--primary);
+    }
+
+    .bot .message-content em {
+      color: var(--secondary);
     }
 
     .input-area {
@@ -167,6 +176,33 @@
       opacity: 0.9;
     }
 
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 10px;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.7; }
+      30% { transform: translateY(-10px); opacity: 1; }
+    }
+
     .timestamp {
       font-size: 11px;
       color: #999;
@@ -195,182 +231,12 @@
   <div class="container">
     <div class="header">
       <h1>🤖 AI Chatbot</h1>
-      <p>Dein intelligenter digitaler Assistent</p>
+      <p>Dein intelligenter digitaler Assistent mit dynamischen Antworten</p>
     </div>
     <div class="chat-area" id="chatArea"></div>
     <div class="input-area">
-      <input type="text" id="messageInput" placeholder="Schreib eine Nachricht oder einen Befehl..." />
+      <input type="text" id="messageInput" placeholder="Schreib eine Frage oder ein Thema..." />
       <button class="send-btn" id="sendBtn">Senden</button>
       <button class="clear-btn" id="clearBtn">Löschen</button>
     </div>
   </div>
-
-  <script>
-    class AICharacteristics {
-      constructor() {
-        this.rules = {
-          friendly: true,
-          noDataSelling: true,
-          noDataStealing: true,
-          preventHarm: true
-        };
-      }
-
-      validateResponse(response) {
-        if (response.toLowerCase().includes('illegalen') || 
-            response.toLowerCase().includes('schaden')) {
-          return false;
-        }
-        return true;
-      }
-    }
-
-    class ChatBot {
-      constructor() {
-        this.characteristics = new AICharacteristics();
-        this.conversationHistory = [];
-        this.loadHistory();
-        this.responses = {
-          greetings: [
-            'Hallo! Ich bin dein KI-Assistent. Wie kann ich dir heute helfen?',
-            'Willkommen! Ich bin bereit, dir zu helfen. Was möchtest du wissen?',
-            'Hallo! Schön, dich zu treffen. Womit kann ich dir helfen?'
-          ],
-          farewells: [
-            'Auf Wiedersehen! Bis bald! 👋',
-            'Tschüss! Hab einen schönen Tag! ✌️',
-            'Bis dann! Jederzeit gerne wieder da! 😊'
-          ],
-          default: [
-            'Das ist interessant! Kannst du mehr darüber erzählen?',
-            'Ich verstehe. Wie kann ich dir dabei helfen?',
-            'Sehr interessant! Was möchtest du noch wissen?'
-          ]
-        };
-      }
-
-      loadHistory() {
-        const saved = localStorage.getItem('chatHistory');
-        if (saved) {
-          this.conversationHistory = JSON.parse(saved);
-        }
-      }
-
-      saveHistory() {
-        localStorage.setItem('chatHistory', JSON.stringify(this.conversationHistory));
-      }
-
-      processMessage(userMessage) {
-        this.conversationHistory.push({
-          type: 'user',
-          message: userMessage,
-          timestamp: new Date()
-        });
-
-        let response = '';
-        const msg = userMessage.toLowerCase();
-
-        if (msg.includes('hallo') || msg.includes('hi')) {
-          response = this.responses.greetings[Math.floor(Math.random() * this.responses.greetings.length)];
-        } else if (msg.includes('auf wiedersehen') || msg.includes('tschüss')) {
-          response = this.responses.farewells[Math.floor(Math.random() * this.responses.farewells.length)];
-        } else if (msg.includes('search:')) {
-          const query = msg.replace('search:', '').trim();
-          response = `Ich suche nach Informationen zu: "${query}"...\n✅ Diese Funktion würde eine API-Integration benötigen.`;
-        } else if (msg.includes('product:')) {
-          const product = msg.replace('product:', '').trim();
-          response = `Ich suche nach Produkten wie: "${product}"...\n✅ Diese Funktion würde eine API-Integration benötigen.`;
-        } else if (msg.includes('clear') || msg === 'löschen') {
-          this.conversationHistory = [];
-          this.saveHistory();
-          response = 'Gespr¨achsverlauf gelöscht! 🗑️';
-        } else if (msg.includes('hilfe')) {
-          response = 'Verfügbare Befehle:\n• search: [Thema] - Sucht Informationen\n• product: [Name] - Findet Produkte\n• clear - Löscht den Chat\n• Normale Fragen beantworten';
-        } else {
-          response = this.responses.default[Math.floor(Math.random() * this.responses.default.length)];
-          response += `\n\nDu hast gesagt: "${userMessage}"\nIch lerne immer mehr über verschiedene Themen!`;
-        }
-
-        this.conversationHistory.push({
-          type: 'bot',
-          message: response,
-          timestamp: new Date()
-        });
-
-        this.saveHistory();
-        return response;
-      }
-    }
-
-    const chatBot = new ChatBot();
-
-    function renderMessages() {
-      const chatArea = document.getElementById('chatArea');
-      chatArea.innerHTML = '';
-
-      if (chatBot.conversationHistory.length === 0) {
-        chatArea.innerHTML = `
-          <div class="welcome-message">
-            <h2>Willkommen! 👋</h2>
-            <p>Ich bin dein KI-Assistent. Schreib einfach eine Nachricht, um zu beginnen!</p>
-            <div class="command-hint">
-              💡 Tipp: Versuche "search: [Thema]" oder "product: [Name]" für spezielle Aufgaben
-            </div>
-          </div>
-        `;
-        return;
-      }
-
-      chatBot.conversationHistory.forEach(msg => {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${msg.type}`;
-        const time = new Date(msg.timestamp).toLocaleTimeString('de-DE', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        });
-        messageDiv.innerHTML = `
-          <div class="message-content">${escapeHtml(msg.message)}</div>
-          <div class="timestamp">${time}</div>
-        `;
-        chatArea.appendChild(messageDiv);
-      });
-
-      chatArea.scrollTop = chatArea.scrollHeight;
-    }
-
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    function sendMessage() {
-      const input = document.getElementById('messageInput');
-      const message = input.value.trim();
-
-      if (message === '') return;
-
-      const response = chatBot.processMessage(message);
-      input.value = '';
-      renderMessages();
-    }
-
-    document.getElementById('sendBtn').addEventListener('click', sendMessage);
-    document.getElementById('messageInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        sendMessage();
-      }
-    });
-
-    document.getElementById('clearBtn').addEventListener('click', () => {
-      if (confirm('Soll der Gespr¨achsverlauf wirklich gelöscht werden?')) {
-        chatBot.conversationHistory = [];
-        chatBot.saveHistory();
-        renderMessages();
-      }
-    });
-
-    renderMessages();
-  </script>
-</body>
-</html>
